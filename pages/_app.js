@@ -1,0 +1,44 @@
+import Head from "next/head";
+import GlobalStyle from "../styles";
+import { useState } from "react";
+
+
+
+export default function App({ Component, pageProps}) {
+    const [clicks, setClicks] = useState(0);   
+
+
+    return (
+        <>
+            <Head>
+                <meta name="viewport" content="width=device-width,initial-scale=1" />
+                <title>Domes Grüße</title>
+                <meta name="description" content="Optimiere deine Pflanzen" />
+                <link rel="shortcut icon" href="/icons/icon-192x192.png" />
+                <link rel="mask-icon" href="/icons/icon-192x192.png" color="#FFFFFF" />
+                <meta name="theme-color" content="#ffffff" />
+                <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+                <link
+                    rel="apple-touch-icon"
+                    sizes="512x512"
+                    href="/icons/icon-512x512.png"
+                />
+                <link rel="manifest" href="/manifest.json" />
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:url" content="https://yourdomain.com" />
+                <meta name="twitter:title" content="Dome's Grüße" />
+                <meta name="twitter:description" content="Halt die Fresse" />
+                <meta name="twitter:image" content="/icons/icon-512x512.png" />
+                <meta name="twitter:creator" content="@DavidWShadow" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="Dome's Grüße" />
+                <meta property="og:description" content="Halt die Fresse" />
+                <meta property="og:site_name" content="Dome's Grüße" />
+                <meta property="og:url" content="https://yourdomain.com" />
+                <meta property="og:image" content="/icons/icon-512x512.png" />
+            </Head>
+            <GlobalStyle />
+            <Component {...pageProps} clicks={clicks} setClicks={setClicks}/>
+        </>
+    );
+}
