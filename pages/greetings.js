@@ -103,18 +103,20 @@ const FadeInContainer = styled.div`
   height: 100vh;
   background-color: #f7f9fc; 
   animation: ${fadeIn} 1s ease;
+
 `;
 
 const StyledImage = styled(Image)`
     width: 100%; 
     height: 100%; 
+    max-height: 400px;
     object-fit: cover;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const StyledImageWrapper = styled.div`
-    margin: 4rem;
+    margin: 1rem 4rem 1rem 4rem;
     border-radius: 10px;
 `;
 
@@ -134,8 +136,6 @@ const StyledTypingStatus = styled.p`
 
 const TextWrapper = styled.div`
     margin: 0 4rem 0 4rem;
-
-
 `;
 
 const StyledButton = styled.button`
@@ -143,6 +143,7 @@ const StyledButton = styled.button`
   color: white;
   font-size: 1.2rem;
   padding: 10px 20px;
+  margin-bottom: 4rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
