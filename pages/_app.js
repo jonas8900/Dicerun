@@ -1,9 +1,10 @@
 import Head from "next/head";
 import GlobalStyle from "../styles";
 import { useState } from "react";
+import { SWRConfig } from "swr/_internal";
 
 
-
+const fetcher = (url) => fetch(url).then((response) => response.json());
 export default function App({ Component, pageProps}) {
     const [clicks, setClicks] = useState(0);   
 
@@ -38,7 +39,9 @@ export default function App({ Component, pageProps}) {
                 <meta property="og:image" content="/icons/icon-512x512.png" />
             </Head>
             <GlobalStyle />
-            <Component {...pageProps} clicks={clicks} setClicks={setClicks}/>
+            <SWRConfig value={{ fetcher }}>
+                <Component {...pageProps} clicks={clicks} setClicks={setClicks}/>
+            </SWRConfig>
         </>
     );
 }
