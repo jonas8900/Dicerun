@@ -5,9 +5,11 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import styled from "styled-components";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import Greetings from "@/components/Game/GamePreview";
 import NavigationBar from "@/components/Navigation/NavigationBar";
+import Game from "@/components/Game/GamePreview";
+import ToastDanger from "@/components/ToastMessages/Danger";
 
 export default function GameStart({setClicks, clicks}) {
     const router = useRouter();
@@ -16,6 +18,7 @@ export default function GameStart({setClicks, clicks}) {
     const { data: session, status } = useSession();
     const [selectedActions, setSelectedActions] = useState({});
     const [toastMessage, setToastMessage] = useState('');
+    const [toastError, setToastError] = useState('');
     const [gameStarted, setGameStarted] = useState(false);
     let isAdmin = false;
 
@@ -52,19 +55,19 @@ export default function GameStart({setClicks, clicks}) {
               body: JSON.stringify({ player, game: gameData.game._id })
             });
           } else if(action === 'remove') {
-            fetch('/api/game/removePlayer', {
+            fetch('/api/game/deletePlayerFromGame', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ player })
+              body: JSON.stringify({ player, game: gameData.game._id })
             });
               
-
+          mutate(game ? `/api/game/getGameById?id=${game}` : null);
           setToastMessage(`${action} wurde auf Person ${player.firstname} ${player.lastname} ausgeführt! 🎉`);
           setTimeout(() => {
             setToastMessage(''); 
-          }, 5000);
+          }, 3000);
         }
       };
 
@@ -92,13 +95,27 @@ export default function GameStart({setClicks, clicks}) {
             navigator.clipboard.writeText(inviteLink);
             setTimeout(() => {
               setToastMessage(''); 
-            }, 5000);
+            }, 3000);
         } else {
           console.error('Fehler beim Erstellen des Einladungslinks');
+          setToastError(response.error);
+          setTimeout(() => {
+            setToastMessage("");
+          }, 3000);
           return;
         }
       }
 
+    }
+
+
+    function handleNeedQuestionsToStart() {
+      if(gameData.game.questions.length === 0) {
+        setToastError('Es müssen mindestens 1 Frage erstellt werden, um das Spiel zu starten!');
+        setTimeout(() => {
+          setToastError(null);
+        }, 3000);
+      }
     }
 
     return(
@@ -106,6 +123,7 @@ export default function GameStart({setClicks, clicks}) {
         {isAdmin && !gameStarted ? (
           <>
           <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
+          <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
           <Header headline={`Hey ${session.user.firstname}💖!`} path={gameData.game.name}/>
           <StyledLabel htmlFor="newgame" />
           <StyledParagraph>Hey {session.user.firstname} du bist der Admin des Spiels <b>{gameData.game.name}</b>. Hier im Adminbereich kannst du Fragen anlegen, Spieler entfernen, einladen oder zum Admin befördern. <br></br><br></br>
@@ -113,7 +131,12 @@ export default function GameStart({setClicks, clicks}) {
           </StyledParagraph>
           <StyledButtonContainer>
             <TextButton text="Aufgaben verwalten" onClick={() => router.push(`/managetasks?x=${game}`)} />
-            <TextButton text="Spielstart" onClick={() => router.push("/yourgames")} />
+              {gameData.game.questions.length > 0 ? (
+                <TextButton text="Spielstart" onClick={() => setGameStarted(true)} />
+              ) : (
+                <TextButton text="Spielstart" onClick={handleNeedQuestionsToStart} />
+              )}
+            
             <TextButton text="Einladung generieren" onClick={handleCreateInviteLink} />
           </StyledButtonContainer>
           <Table>
@@ -142,6 +165,33 @@ export default function GameStart({setClicks, clicks}) {
               ))}
             </tbody>
           </Table>
+          <br></br>
+          <hr></hr>
+          <StyledParagraph>Statistik des Spieles:</StyledParagraph>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Spieler</Th>
+                <Th>Erledigte Aufgaben</Th>
+                <Th>Punkte</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {gameData.players.map((player) => (
+                <tr key={player._id}>
+                  <Td>{player.firstname} {player.lastname}</Td>
+                  <Td>
+                   43 von 82
+                  </Td>
+                  <Td>
+                    12000
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <br></br>
+          <br></br>
           </>
           ) :(
           <>
@@ -149,7 +199,7 @@ export default function GameStart({setClicks, clicks}) {
             <NavigationBar />
           </NavigationBarConatiner>
           {gameData ? (
-            <Greetings/>
+            <Game/>
           ) : (
             <h1>Kein Spiel gefunden</h1>
           )}
@@ -195,6 +245,8 @@ const Table = styled.table`
   width: 90%;
   margin: 0 auto;
   border-collapse: collapse;
+
+
 `;
 
 const Th = styled.th`

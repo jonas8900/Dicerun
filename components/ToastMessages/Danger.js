@@ -6,7 +6,7 @@ export default function ToastDanger({ message, onClose }) {
     if (message) {
       setTimeout(() => {
         onClose();
-      }, 5000);
+      }, 3000);
     }
   }, [message, onClose]);
 

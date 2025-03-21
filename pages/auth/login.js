@@ -35,17 +35,16 @@ export default function Login({ clicks, setClicks, className }) {
 
     if (response.error) {
       setError(response.error);
-      setToastMessage("Email oder Passwort stimmen nicht überein");
       setTimeout(() => {
         setToastMessage("");
         router.push("/auth/login");
-      }, 4000);
+      }, 3000);
     } else {
       setToastMessage("Erfolgreich eingeloggt! 🎉");
       setTimeout(() => {
         setToastMessage("");
         router.push("/");
-      }, 4000);
+      }, 2000);
     }
   }
 
@@ -64,7 +63,7 @@ export default function Login({ clicks, setClicks, className }) {
           message={toastMessage}
           onClose={() => setToastMessage("")}
         />
-        <ToastDanger message={error} onClose={() => setToastMessage(null)} />
+        <ToastDanger message={error} onClose={() => setError(null)} />
         <StyledImage
           src={"/images/Logo.png"}
           width={200}

@@ -1,6 +1,7 @@
 import TextButton from "@/components/Buttons/TextSubmitButton";
 import Header from "@/components/Header/Header";
 import CredentialInput from "@/components/Inputs/credentialInput";
+import ToastDanger from "@/components/ToastMessages/Danger";
 import ToastSuccess from "@/components/ToastMessages/Success";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -10,6 +11,7 @@ import styled from "styled-components";
 export default function JoinGame() {
   const { data: session, status } = useSession();
   const [toastMessage, setToastMessage] = useState('');
+  const [toastError, setToastError] = useState('');
   const router = useRouter();
   if (status === "loading") {
     return <h1>Lade...</h1>;
@@ -35,6 +37,15 @@ export default function JoinGame() {
       body: JSON.stringify(data)
     });
 
+
+    if(!response.ok) {
+      setToastError(response.error);
+      setTimeout(() => {
+        setToastMessage("");
+      }, 3000);
+      return;
+    }
+
     if(response.ok) {
       const gameData = await response.json();
       console.log(gameData);
@@ -54,6 +65,7 @@ export default function JoinGame() {
       {session && session.user && session.user.email && (
         <>
             <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
+            <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
             <Header headline={`Hey ${session.user.firstname}💖!`} path={"Spiel Beitreten"} />
             <Styledheadline></Styledheadline>
             <StyledLabel htmlFor="newgame" />

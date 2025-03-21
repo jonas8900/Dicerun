@@ -13,11 +13,13 @@ import { useRouter } from "next/router";
 import CredentialSelect from "@/components/Inputs/credentialSelect";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import ToastSuccess from "@/components/ToastMessages/Success";
+import ToastDanger from "@/components/ToastMessages/Danger";
 
 export default function Registration({className, }) {
     const router = useRouter();
     const [typeSwitch, setTypeSwitch] = useState('password');
     const [toastMessage, setToastMessage] = useState('');
+    const [toastError, setToastError] = useState('');
 
 
     async function handleSubmit(event) {
@@ -35,6 +37,10 @@ export default function Registration({className, }) {
 
         if(!response.ok) {
           console.log("Error");
+          setToastError(response.error);
+          setTimeout(() => {
+            setToastMessage("");
+          }, 3000);
           return;
         }
 
@@ -81,6 +87,7 @@ export default function Registration({className, }) {
         <>
               <>
                 <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
+                <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
                 <StyledContainer>
                   <StyledBackIcon onClick={() => router.push("/")}/>
                   <StyledImage src="/images/Logo.png" alt="Registration" width={300} height={300} />

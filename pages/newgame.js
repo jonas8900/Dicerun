@@ -1,13 +1,18 @@
 import TextButton from "@/components/Buttons/TextSubmitButton";
 import Header from "@/components/Header/Header";
 import CredentialInput from "@/components/Inputs/credentialInput";
+import ToastDanger from "@/components/ToastMessages/Danger";
+import ToastSuccess from "@/components/ToastMessages/Success";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import styled from "styled-components";
 
 export default function NewGame() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastError, setToastError] = useState('');
   if (status === "loading") {
     return <h1>Lade...</h1>;
   }
@@ -31,9 +36,21 @@ export default function NewGame() {
         body: JSON.stringify(data),
         });
 
+    if (response.error) {
+      console.log("error");
+      setToastError(response.error);
+      setTimeout(() => {
+        setToastMessage(""); 
+      }, 3000);
+    }
+
     if (response.ok) {
         console.log("game addet");
-        router.push("/yourgames");
+        setToastMessage('Aufgabe erfolgreich Hinzugefügt! 🎉');
+        setTimeout(() => {
+          setToastMessage(''); 
+          router.push("/yourgames");
+        }, 3000);
     }
 
     
@@ -43,6 +60,8 @@ export default function NewGame() {
     <>
       {session && session.user && session.user.email && (
         <>
+            <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
+            <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
             <Header headline={`Hey ${session.user.firstname}💖!`} path={"Neues Spiel"} />
             <Styledheadline></Styledheadline>
             <StyledLabel htmlFor="gamename" />

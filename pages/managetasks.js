@@ -1,16 +1,21 @@
 import TextButton from "@/components/Buttons/TextSubmitButton";
 import Header from "@/components/Header/Header";
 import CredentialInput from "@/components/Inputs/credentialInput";
+import ToastDanger from "@/components/ToastMessages/Danger";
+import ToastSuccess from "@/components/ToastMessages/Success";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import useSWR, { mutate } from "swr";
+import { IoMdArrowRoundBack } from "react-icons/io";
 
 export default function Managetasks() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { x } = router.query;
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastError, setToastError] = useState('');
 
   const { data: gameData, error, isLoading } = useSWR(x ? `/api/game/getGameById?id=${x}` : null);
 
@@ -43,6 +48,15 @@ export default function Managetasks() {
 
       mutate(x ? `/api/game/getGameById?id=${x}` : null);
       event.target.reset();
+      setToastMessage('Aufgabe erfolgreich Hinzugefügt! 🎉');
+      setTimeout(() => {
+        setToastMessage(''); 
+      }, 3000);
+    } else {
+      setToastError(response.error);
+        setTimeout(() => {
+          setToastMessage("");
+        }, 3000);
     }
   }
 
@@ -58,6 +72,15 @@ export default function Managetasks() {
     if (response.ok) {
       console.log("Task deleted");
       mutate(x ? `/api/game/getGameById?id=${x}` : null); 
+      setToastMessage('Aufgabe erfolgreich gelöscht! ❌');
+      setTimeout(() => {
+        setToastMessage(''); 
+      }, 3000);
+    } else {
+      setToastError(response.error);
+      setTimeout(() => {
+        setToastMessage("");
+      }, 3000);
     }
   }
 
@@ -65,9 +88,12 @@ export default function Managetasks() {
     <>
       {session && session.user && session.user.email && (
         <>
+          <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
+          <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
           <Header headline={`Hey ${session.user.firstname}💖!`} path={"Neues Spiel"} />
           <Styledheadline></Styledheadline>
           <StyledLabel htmlFor="task" />
+          <StyledIcon onClick={() => router.push(`/activeGame/${x}`)}/>
           <StyledParagraph>Neue Aufgabe erstellen</StyledParagraph>
           <StyledForm onSubmit={handleSubmit}>
             <CredentialInput type="text" name="task" placeholder="Aufgabe erstellen" maxLength="500" />
@@ -109,6 +135,14 @@ export default function Managetasks() {
 
 const StyledTextButton = styled(TextButton)`
     background-color: var(--brand-primary);
+`;
+
+
+const StyledIcon = styled(IoMdArrowRoundBack)`
+  width: 2rem;
+  height: 2rem;
+  margin-left: 2rem;
+  cursor: pointer;
 `;
 
 const Styledheadline = styled.h1`

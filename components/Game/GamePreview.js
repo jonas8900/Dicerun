@@ -1,31 +1,33 @@
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import { IoMdArrowRoundBack } from 'react-icons/io';
 import { TypeAnimation } from 'react-type-animation';
 import styled, { keyframes } from 'styled-components';
 import useSWR from 'swr';
 import { mutate } from "swr";
 
-export default function Greetings({ gameId }) {
-    const { data, isLoading } = useSWR("/api/getQuestion");
+export default function Game() {
+    const router = useRouter();
+    const { game } = router.query;
+    const { data, isLoading } = useSWR("/api/game/getGameTasks?x=" + game);
     const [randomImage, setRandomImage] = useState(1);
     const [randomSlogan, setRandomSlogan] = useState(null); 
     const [typingStatus, setTypingStatus] = useState('Initializing');
-    const router = useRouter();
+
 
     useEffect(() => {
         const randomImage = Math.floor(Math.random() * 19) + 1;
         setRandomImage(randomImage);
 
-        if (data && data.length > 0) {
-            const randomSloganIndex = Math.floor(Math.random() * data.length);
-            setRandomSlogan(data[randomSloganIndex]);
+        if (data && data.questions.length > 0) {
+            const randomSloganIndex = Math.floor(Math.random() * data.questions.length);
+            setRandomSlogan(data.questions[randomSloganIndex].task);
         }
     }, [data]); 
-
     
     async function handleSwitchSide() {
-        await mutate("/api/getGameQuestions", null, { revalidate: true });
+        await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
     }
     
 
@@ -33,6 +35,16 @@ export default function Greetings({ gameId }) {
         return <div>Lade Daten...</div>; 
     }
 
+
+    async function handleTaskSuccess() {
+
+        await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
+    }
+
+    async function handleTaskFail() {
+        
+        await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
+    }
 
     return (
         <FadeInContainer>
@@ -49,7 +61,7 @@ export default function Greetings({ gameId }) {
                             () => {
                                 setTypingStatus('Typing...');
                             },
-                            randomSlogan.question,  
+                            "Aufgabe: "+randomSlogan,  
                             () => {
                                 setTypingStatus('Done Typing');
                             }
@@ -61,7 +73,11 @@ export default function Greetings({ gameId }) {
                 )}
             </TextWrapper>
             <StyledTypingStatus>Status: <span>{typingStatus}</span></StyledTypingStatus>
-            <StyledButton onClick={handleSwitchSide}>Neue Aufgabe</StyledButton>
+            <StyledButtonContainer>
+                <StyledSuccessButton onClick={handleTaskSuccess}>Erfüllt</StyledSuccessButton>
+                <StyledDangerButton onClick={handleTaskFail}>Nicht erfüllt</StyledDangerButton>
+            </StyledButtonContainer>
+            <StyledButton onClick={handleSwitchSide}>Nächste Aufgabe</StyledButton>
         </FadeInContainer>
     );
 }
@@ -86,10 +102,54 @@ const FadeInContainer = styled.div`
 
 `;
 
+const StyledIcon = styled(IoMdArrowRoundBack)`
+  width: 2rem;
+  height: 2rem;
+  top: 1.5rem;
+  left: 1.5rem;
+  position: absolute;
+  cursor: pointer;
+`;
+
+const StyledButtonContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1rem 0;
+`;
+
+const StyledSuccessButton = styled.button`
+    background-color:rgb(135, 235, 140);
+    color:rgb(255, 255, 255);
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 5px;
+    width: 8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    `;
+
+    const StyledDangerButton = styled.button`
+    background-color:rgb(235, 135, 135);
+    color:rgb(255, 255, 255);
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 5px;
+    width: 8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    `;
+
 const StyledImage = styled(Image)`
     width: 100%; 
     height: 100%; 
-    max-height: 400px;
+    max-height: 250px;
     object-fit: cover;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -102,7 +162,7 @@ const StyledImageWrapper = styled.div`
 
 const StyledTypingStatus = styled.p`  
     font-size: 1.2rem;
-    margin-top: 2rem;
+    margin-top: 1rem;
     margin-left: 4rem;
     font-weight: 600;
     color: #333;
@@ -115,7 +175,7 @@ const StyledTypingStatus = styled.p`
 `;
 
 const TextWrapper = styled.div`
-    margin: 0 4rem 0 4rem;
+    margin: 0 2rem 0 2rem;
 `;
 
 const StyledButton = styled.button`
