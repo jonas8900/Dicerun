@@ -3,6 +3,8 @@ import { authOptions } from "../auth/[...nextauth]";
 import dbConnect from "@/db/connect";
 import Game from "@/db/models/Game";
 import User from "@/db/models/User";
+import Task from "@/db/models/Tasks";
+
 
 export default async function handler(request, response) {
     await dbConnect();
