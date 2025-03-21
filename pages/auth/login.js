@@ -67,7 +67,7 @@ export default function Login({ clicks, setClicks, className }) {
               <>
               <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
               <ToastDanger message={error} onClose={() => setToastMessage(null)} />
-                <StyledImage src={"/images/logo.png"} width={200} height={200} alt="Logo" />
+                <StyledImage src={"/images/Logo.png"} width={200} height={200} alt="Logo" />
                   <StyledForm onSubmit={handleSubmit} className={className}>
                     <StyledInputContainer>
                       <StyledLabel htmlFor="email" />
