@@ -4,8 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import styled, { keyframes } from 'styled-components';
 import useSWR from 'swr';
+import { mutate } from "swr";
 
-export default function Greetings({ setClicks }) {
+export default function Greetings({ gameId }) {
     const { data, isLoading } = useSWR("/api/getQuestion");
     const [randomImage, setRandomImage] = useState(1);
     const [randomSlogan, setRandomSlogan] = useState(null); 
@@ -22,10 +23,11 @@ export default function Greetings({ setClicks }) {
         }
     }, [data]); 
 
-    function handleSwitchSide() {
-        router.push('/');
-        setClicks(null);
+    
+    async function handleSwitchSide() {
+        await mutate("/api/getGameQuestions", null, { revalidate: true });
     }
+    
 
     if (isLoading || randomSlogan === null || !data) {
         return <div>Lade Daten...</div>; 
@@ -50,24 +52,16 @@ export default function Greetings({ setClicks }) {
                             randomSlogan.question,  
                             () => {
                                 setTypingStatus('Done Typing');
-                            },
-                            1000,
-                            () => {
-                                setTypingStatus('Deleting...');
-                            },
-                            '',
-                            () => {
-                                setTypingStatus('Done Deleting');
-                            },
+                            }
                         ]}
                         speed={50} 
                         cursor={true} 
-                        repeat={Infinity} 
+                        repeat={0} 
                     />
                 )}
             </TextWrapper>
             <StyledTypingStatus>Status: <span>{typingStatus}</span></StyledTypingStatus>
-            <StyledButton onClick={handleSwitchSide}>Noch eine Weisheit</StyledButton>
+            <StyledButton onClick={handleSwitchSide}>Neue Aufgabe</StyledButton>
         </FadeInContainer>
     );
 }

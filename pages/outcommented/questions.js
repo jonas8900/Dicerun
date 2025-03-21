@@ -7,10 +7,9 @@ import useSWR from "swr";
 export default function Questions() {
     const { data, isLoading } = useSWR("/api/getQuestion");
 
-    // Diese Funktion wird aufgerufen, wenn der Löschen-Button geklickt wird
-    async function deleteQuestion(id) {
-        console.log("ID, die gelöscht werden soll:", id); // Überprüfe, ob die ID korrekt ist
 
+    async function deleteQuestion(id) {
+        console.log("ID, die gelöscht werden soll:", id); 
         try {
             const response = await fetch('/api/deleteQuestion', {
                 method: 'DELETE',
@@ -44,7 +43,6 @@ export default function Questions() {
                     {data && data.map((slogan) => (
                         <StyledItemWrapper key={slogan._id}>
                             <StyledListItem>{slogan.question}</StyledListItem>
-                            {/* Löschen Button, der die ID weitergibt */}
                             <StyledButton>
                                 <StyledIcon onClick={() => deleteQuestion(slogan._id)} />
                             </StyledButton>
