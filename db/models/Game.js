@@ -16,6 +16,7 @@ const gameSchema = new Schema({
             count: { type: Number, default: 1 } 
         }]
     }],
+    files: [{ type: String }],
     createdAt: { type: Date, default: Date.now },
 });
 

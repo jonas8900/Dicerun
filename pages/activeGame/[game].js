@@ -138,6 +138,7 @@ export default function GameStart({setClicks, clicks}) {
               ) : (
                 <TextButton text="Spielstart" onClick={handleNeedQuestionsToStart} />
               )}
+              <TextButton text="Bilder hinzufügen" onClick={() => router.push(`/addimages?x=${game}`)} />
             
             <TextButton text="Einladung generieren" onClick={handleCreateInviteLink} />
           </StyledButtonContainer>
@@ -237,6 +238,7 @@ const StyledButtonContainer = styled.div`
   justify-content: center;
   gap: 1rem;
   margin: 2rem 0;
+  flex-wrap: wrap;
 
   button {
     padding: 0.5rem;
