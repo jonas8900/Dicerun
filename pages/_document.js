@@ -34,12 +34,6 @@ export default class MyDocument extends Document {
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-
-          <link rel="manifest" href="/manifest.json" />
-          <meta name="theme-color" content="#000000" />
-          <link rel="icon" href="/icons/icon-192x192.png" />
-          <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
-          <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png" />
         </Head>
         <body>
           <Main />
