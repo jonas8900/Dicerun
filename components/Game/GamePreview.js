@@ -23,25 +23,13 @@ export default function Game() {
         }
     );
     const { data: session, status } = useSession();
-    const [randomImage, setRandomImage] = useState(1);
+    const [randomImage, setRandomImage] = useState(0);
     const [randomSlogan, setRandomSlogan] = useState(null); 
     const [typingStatus, setTypingStatus] = useState('Initializing');
     const [toastMessage, setToastMessage] = useState('');
     const [toastError, setToastError] = useState('');
     const [reloader, setReloader] = useState(false);
 
-
-
-
-    // useEffect(() => {
-    //     const randomImage = Math.floor(Math.random() * 19) + 1;
-    //     setRandomImage(randomImage);
-
-    //     if (data && data.questions.length > 0) {
-    //         const randomSloganIndex = Math.floor(Math.random() * data.questions.length);
-    //         setRandomSlogan(data.questions[randomSloganIndex].task);
-    //     }
-    // }, [data]); 
 
     useEffect(() => {
        
@@ -63,38 +51,6 @@ export default function Game() {
             }
     }, [reloader, reloadGameData]);
     
-
-    // useEffect(() => {
-    //     if (data && data.questions.length > 0 && gameData && gameData.game) {
-    //         const game = gameData.game;  
-    //         const answeredQuestions = game.answeredQuestions || [];  
-    
-    //         console.log(answeredQuestions, 'answeredQuestions');
-
-    //         const playerAnsweredQuestions = answeredQuestions.find(
-    //             (entry) => entry.player.toString() === session?.user.id 
-    //         );
-    
-    //         console.log(playerAnsweredQuestions, 'playerAnsweredQuestions'); 
-    
-
-    //         const remainingQuestions = playerAnsweredQuestions
-    //             ? data.questions.filter(
-    //                 (question) => !playerAnsweredQuestions.questions.includes(question._id)
-    //             )
-    //             : data.questions; 
-
-    //             console.log(remainingQuestions, 'remainingQuestions');
-    
-    //         if (remainingQuestions.length > 0) {
-    //             const randomIndex = Math.floor(Math.random() * remainingQuestions.length);
-    //             setRandomSlogan(remainingQuestions[randomIndex].task);
-    //         } else {
-    //             setRandomSlogan(data.questions[Math.floor(Math.random() * data.questions.length)].task);
-    //         }
-    //     }
-    // }, [data, gameData, session, reloader]);
-
     async function handleSetRandomQuestion() {
         if (!gameData || !gameData.game) {
             const response = await fetch(`/api/game/getGameById?id=${game}`);
@@ -108,20 +64,19 @@ export default function Game() {
             }
 
         }
-        
 
         if (data && data.questions.length > 0 && gameData && gameData.game) {
             const game = gameData.game;  
-
-
             const answeredQuestions = game.answeredQuestions || [];  
 
+            const randomFileIndex = Math.floor(Math.random() * gameData.game.files.length);
+            const randomFileUrl = gameData.game.files[randomFileIndex]; 
+            
+            setRandomImage(randomFileUrl); 
 
             const playerAnsweredQuestions = answeredQuestions.find(
                 (entry) => entry.player.toString() === session?.user.id 
             );
-    
-
 
             const remainingQuestions = playerAnsweredQuestions
             ? data.questions.filter((question) => {
@@ -132,9 +87,6 @@ export default function Game() {
             : data.questions;
     
             if (remainingQuestions.length > 0) {
-                const randomImage = Math.floor(Math.random() * 19) + 1;
-                setRandomImage(randomImage);
-
                 const randomIndex = Math.floor(Math.random() * remainingQuestions.length);
                 setRandomSlogan(remainingQuestions[randomIndex].task);
             } else {
@@ -142,11 +94,6 @@ export default function Game() {
             }
         }
     }
-    
-      
-    
-    
-      
     
     async function handleSwitchSide() {
         await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
@@ -231,13 +178,13 @@ export default function Game() {
             }
           }
         }
-
     return (
         <FadeInContainer>
             <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
             <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
-            <StyledImageWrapper>
-                <StyledImage src={`/images/${randomImage}.jpg`} alt="Bild" width={500} height={500} />
+
+           <StyledImageWrapper>
+                <StyledImage src={randomImage} alt="Hochgeladenes Bild" width={500} height={500} />
             </StyledImageWrapper>
 
             <TextWrapper>

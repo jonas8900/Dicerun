@@ -23,12 +23,13 @@ export default async function handler(request, response) {
           const game = await Game.findById(id).populate('questions');
           let players = null;
 
-    
+        if(game) {
           if (game.length === 0) {
             return response.status(404).json({ message: "Spiel nicht gefunden" });
           } else {
             players = await User.find({ _id: { $in: game.players } }).select("_id firstname lastname").lean();
           }
+        }
 
         
     
