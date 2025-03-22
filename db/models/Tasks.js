@@ -4,6 +4,8 @@ const { Schema } = mongoose;
 
 const taskSchema = new Schema({
   task: { type: String, required: true },
+  points: { type: Number, required: true },
+  pointsAfterFinish: { type: Number, required: true },
 });
 
 const Task = mongoose.models.Task || mongoose.model("Task", taskSchema);

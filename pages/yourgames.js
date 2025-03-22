@@ -39,6 +39,7 @@ export default function YourGames() {
     }));
   }
   
+  console.log(games && games.length > 0)
 
 
   return (
@@ -61,7 +62,15 @@ export default function YourGames() {
                 defaultValue={"Spiel auswählen"}
                 required
               />
-              <TextButton text={"Spiel auswählen"}></TextButton>
+              {games && games.length > 0 ? (
+                <TextButton text={"Spiel auswählen"} ></TextButton>
+                ) : (
+                <>
+                  <StyledAlertParagraph>Keine Spiele vorhanden, lege erst ein Spiel an</StyledAlertParagraph>
+                  <TextButton type="button" onClick={() => router.push("/newgame")} text={"Neues Spiel anlegen"} ></TextButton>
+                </>
+                )}
+
             </StyledFormGameSubmit>
 
         </>
@@ -93,6 +102,13 @@ const StyledParagraph = styled.p`
   padding: 1rem;
   font-size: 1rem;
   color: var(--brand-primary);
+`;
+
+const StyledAlertParagraph = styled.p`
+  font-size: 0.8rem;
+  padding: 0;
+  margin: 0;
+  color:rgb(255, 77, 77);
 `;
 
 const StyledLabel = styled.label`

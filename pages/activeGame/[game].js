@@ -118,6 +118,8 @@ export default function GameStart({setClicks, clicks}) {
       }
     }
 
+    console.log(gameData.game.answeredQuestions)
+
     return(
         <>
         {isAdmin && !gameStarted ? (
@@ -150,12 +152,15 @@ export default function GameStart({setClicks, clicks}) {
             <tbody>
               {gameData.players.map((player) => (
                 <tr key={player._id}>
-                  <Td>{player.firstname} {player.lastname}</Td>
+                  <Td>{player.firstname} {player.lastname} {gameData.game.admin.includes(player._id) && ' 👑'}</Td>
                   <Td>
                     <Select onChange={handleActionChange(player)}>
                       <option value="">Aktion wählen</option>
                       <option value="admin">Zum Admin befördern</option>
-                      <option value="remove">Entfernen</option>
+                      {gameData.game.players.length > 1 && !gameData?.game?.admin?.includes(player._id) && (
+                          <option value="remove">Entfernen</option>
+                      )}
+
                     </Select>
                   </Td>
                   <Td>
@@ -181,10 +186,10 @@ export default function GameStart({setClicks, clicks}) {
                 <tr key={player._id}>
                   <Td>{player.firstname} {player.lastname}</Td>
                   <Td>
-                   43 von 82
+                    {gameData.game.answeredQuestions.find((entry) => entry.player === player._id)?.questions.length || 0} <br></br><StyledPointsParagraph>Gesamt: {gameData.game.answeredQuestions.find((entry) => entry.player === player._id)?.questions.reduce((acc, curr) => acc + curr.count, 0) || 0} mit Wiederholungen</StyledPointsParagraph>
                   </Td>
                   <Td>
-                    12000
+                    {gameData.game.scores.find((score) => score.player === player._id)?.points || 0}
                   </Td>
                 </tr>
               ))}
@@ -240,6 +245,12 @@ const StyledButtonContainer = styled.div`
   }
 `;
 
+const StyledPointsParagraph = styled.p`
+  font-size: 0.6rem;
+  color: var(--brand-primary);
+  margin: 0;
+  padding: 0;
+`;
 
 const Table = styled.table`
   width: 90%;

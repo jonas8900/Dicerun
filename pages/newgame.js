@@ -41,7 +41,7 @@ export default function NewGame() {
       setToastError(response.error);
       setTimeout(() => {
         setToastMessage(""); 
-      }, 3000);
+      }, 2000);
     }
 
     if (response.ok) {
@@ -50,7 +50,7 @@ export default function NewGame() {
         setTimeout(() => {
           setToastMessage(''); 
           router.push("/yourgames");
-        }, 3000);
+        }, 2000);
     }
 
     

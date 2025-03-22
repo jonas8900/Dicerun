@@ -1,30 +1,152 @@
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IoMdArrowRoundBack } from 'react-icons/io';
 import { TypeAnimation } from 'react-type-animation';
 import styled, { keyframes } from 'styled-components';
 import useSWR from 'swr';
 import { mutate } from "swr";
+import ToastSuccess from '../ToastMessages/Success';
+import ToastDanger from '../ToastMessages/Danger';
 
 export default function Game() {
     const router = useRouter();
     const { game } = router.query;
     const { data, isLoading } = useSWR("/api/game/getGameTasks?x=" + game);
+    const { data: gameData, error, isLoading: gameLoading } = useSWR(
+        game ? `/api/game/getGameById?id=${game}` : null,
+        {
+            revalidateOnMount: true,   
+            revalidateOnFocus: true,  
+            revalidateOnReconnect: true,
+        }
+    );
+    const { data: session, status } = useSession();
     const [randomImage, setRandomImage] = useState(1);
     const [randomSlogan, setRandomSlogan] = useState(null); 
     const [typingStatus, setTypingStatus] = useState('Initializing');
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastError, setToastError] = useState('');
+    const [reloader, setReloader] = useState(false);
 
+
+
+
+    // useEffect(() => {
+    //     const randomImage = Math.floor(Math.random() * 19) + 1;
+    //     setRandomImage(randomImage);
+
+    //     if (data && data.questions.length > 0) {
+    //         const randomSloganIndex = Math.floor(Math.random() * data.questions.length);
+    //         setRandomSlogan(data.questions[randomSloganIndex].task);
+    //     }
+    // }, [data]); 
 
     useEffect(() => {
-        const randomImage = Math.floor(Math.random() * 19) + 1;
-        setRandomImage(randomImage);
-
-        if (data && data.questions.length > 0) {
-            const randomSloganIndex = Math.floor(Math.random() * data.questions.length);
-            setRandomSlogan(data.questions[randomSloganIndex].task);
+       
+        if (!gameLoading && gameData && data) {
+            handleSetRandomQuestion();
         }
-    }, [data]); 
+    }, [gameLoading, gameData, data]);
+
+    const reloadGameData = useCallback(async () => {
+        await mutate(`/api/game/getGameById?id=${game}`, undefined, true);
+        console.log('reloaded');
+        console.log(gameData?.game?.answeredQuestions?.length);
+    }, [game]); 
+    
+        useEffect(() => {
+            if (reloader) { 
+                reloadGameData();
+                setReloader(false); 
+            }
+    }, [reloader, reloadGameData]);
+    
+
+    // useEffect(() => {
+    //     if (data && data.questions.length > 0 && gameData && gameData.game) {
+    //         const game = gameData.game;  
+    //         const answeredQuestions = game.answeredQuestions || [];  
+    
+    //         console.log(answeredQuestions, 'answeredQuestions');
+
+    //         const playerAnsweredQuestions = answeredQuestions.find(
+    //             (entry) => entry.player.toString() === session?.user.id 
+    //         );
+    
+    //         console.log(playerAnsweredQuestions, 'playerAnsweredQuestions'); 
+    
+
+    //         const remainingQuestions = playerAnsweredQuestions
+    //             ? data.questions.filter(
+    //                 (question) => !playerAnsweredQuestions.questions.includes(question._id)
+    //             )
+    //             : data.questions; 
+
+    //             console.log(remainingQuestions, 'remainingQuestions');
+    
+    //         if (remainingQuestions.length > 0) {
+    //             const randomIndex = Math.floor(Math.random() * remainingQuestions.length);
+    //             setRandomSlogan(remainingQuestions[randomIndex].task);
+    //         } else {
+    //             setRandomSlogan(data.questions[Math.floor(Math.random() * data.questions.length)].task);
+    //         }
+    //     }
+    // }, [data, gameData, session, reloader]);
+
+    async function handleSetRandomQuestion() {
+        if (!gameData || !gameData.game) {
+            const response = await fetch(`/api/game/getGameById?id=${game}`);
+            
+            if(response.ok) {
+                const newGameData = await response.json();
+                mutate(`/api/game/getGameById?id=${game}`, newGameData, { revalidate: true });
+            } else {
+                console.error('Fehler beim Laden des Spiels');
+                return;
+            }
+
+        }
+        
+
+        if (data && data.questions.length > 0 && gameData && gameData.game) {
+            const game = gameData.game;  
+
+
+            const answeredQuestions = game.answeredQuestions || [];  
+
+
+            const playerAnsweredQuestions = answeredQuestions.find(
+                (entry) => entry.player.toString() === session?.user.id 
+            );
+    
+
+
+            const remainingQuestions = playerAnsweredQuestions
+            ? data.questions.filter((question) => {
+                return !playerAnsweredQuestions.questions.some(
+                    (answeredQuestion) => answeredQuestion.taskId.toString() === question._id.toString()
+                );
+            })
+            : data.questions;
+    
+            if (remainingQuestions.length > 0) {
+                const randomImage = Math.floor(Math.random() * 19) + 1;
+                setRandomImage(randomImage);
+
+                const randomIndex = Math.floor(Math.random() * remainingQuestions.length);
+                setRandomSlogan(remainingQuestions[randomIndex].task);
+            } else {
+                setRandomSlogan(data.questions[Math.floor(Math.random() * data.questions.length)].task);
+            }
+        }
+    }
+    
+      
+    
+    
+      
     
     async function handleSwitchSide() {
         await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
@@ -37,17 +159,83 @@ export default function Game() {
 
 
     async function handleTaskSuccess() {
+            const task = data.questions.find(q => q.task === randomSlogan); 
+            const currentUser = session?.user; 
+            const points = task?.points;
+            const pointsAfterFinish = task?.pointsAfterFinish;
 
-        await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
-    }
+          
+            if (points && currentUser) {
+              const response = await fetch('/api/game/addPoints', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ gameId: game, playerId: currentUser.id, points, fail: false, taskId: task._id, pointsAfterFinish }),
+              });
+
+              if (response.ok) {
+                const answerResponse = await fetch(`/api/game/addAnsweredTasks`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ gameId: game, playerId: currentUser.id, taskId: task._id }),
+                });
+                if (answerResponse.ok) {
+                    await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
+                    handleSetRandomQuestion(); 
+                    setReloader(!reloader); 
+                    setToastMessage('Punkte erfolgreich hinzugefügt! 🎉');
+                    setTimeout(() => setToastMessage(''), 3000);
+                  }
+                } else {
+                  console.error('Fehler beim Hinzufügen der Punkte');
+                }
+              }
+            }
 
     async function handleTaskFail() {
-        
-        await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
-    }
+        const task = data.questions.find(q => q.task === randomSlogan); 
+        const currentUser = session?.user; 
+        const points = task?.points;
+        const pointsAfterFinish = task?.pointsAfterFinsih;
+      
+        if (points && currentUser) {
+          const response = await fetch('/api/game/addPoints', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ gameId: game, playerId: currentUser.id, points, fail: true, taskId: task._id, pointsAfterFinish }),
+          });
+      
+          if (response.ok) {
+            const answerResponse = await fetch(`/api/game/addAnsweredTasks`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ gameId: game, playerId: currentUser.id, taskId: task._id }),
+            });
+            
+            if (answerResponse.ok) {
+                await mutate(`/api/game/getGameTasks?x=${game}`, null, { revalidate: true });
+                handleSetRandomQuestion();
+                setReloader(!reloader); 
+                setToastMessage('Punkte erfolgreich hinzugefügt! 🎉');
+                setTimeout(() => setToastMessage(''), 3000);
+              }
+            } else {
+              console.error('Fehler beim Hinzufügen der Punkte');
+            }
+          }
+        }
 
     return (
         <FadeInContainer>
+            <ToastSuccess message={toastMessage} onClose={() => setToastMessage('')} />
+            <ToastDanger message={toastError} onClose={() => setToastError(null)}/>
             <StyledImageWrapper>
                 <StyledImage src={`/images/${randomImage}.jpg`} alt="Bild" width={500} height={500} />
             </StyledImageWrapper>

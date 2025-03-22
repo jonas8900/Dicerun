@@ -103,7 +103,7 @@ export default function Registration({className, }) {
                           placeholder="Anrede"
                           OptionArray={[{value: "Herr", text: "Herr"}, {value: "Frau", text:"Frau"}, {value: "Divers", text: "Divers"}]}
                           defaultValue={"Anrede"}
-                          required
+                          required={true}
                         />
                         <StyledLabel htmlFor="firstname" />
                         <CredentialInput

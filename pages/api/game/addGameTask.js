@@ -18,10 +18,16 @@ export default async function handler(req, res) {
     return res.status(403).json({ message: "No access" });
   }
 
-  const { task, x } = req.body; 
+  const { task, x, points, pointsAfterFinish } = req.body; 
+
+  console.log(req.body);
 
   if (!task) {
     return res.status(400).json({ message: "Task data is missing or incomplete" });
+  }
+
+  if(!points || points < 0 || points > 10000) {
+    return res.status(400).json({ message: "Points are missing, too low or too high" });
   }
 
   try {
@@ -31,6 +37,8 @@ export default async function handler(req, res) {
 
     const newQuestion = new Task({
       task: task,
+      points: points,
+      pointsAfterFinish: pointsAfterFinish,
     });
 
     await newQuestion.save();  

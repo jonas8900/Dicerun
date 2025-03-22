@@ -93,10 +93,26 @@ export default function Managetasks() {
           <Header headline={`Hey ${session.user.firstname}💖!`} path={"Neues Spiel"} />
           <Styledheadline></Styledheadline>
           <StyledLabel htmlFor="task" />
+          <StyledLabel htmlFor="points" />
+          <StyledLabel htmlFor="pointsAfterFinish" />
           <StyledIcon onClick={() => router.push(`/activeGame/${x}`)}/>
           <StyledParagraph>Neue Aufgabe erstellen</StyledParagraph>
           <StyledForm onSubmit={handleSubmit}>
             <CredentialInput type="text" name="task" placeholder="Aufgabe erstellen" maxLength="500" />
+            <StyledAlertParagraph>Wie viele Punkte soll es für diese Frage geben</StyledAlertParagraph>
+            <StyledInput type="number" name="points" placeholder="Punkte" min="0" max="10000" step="50" inputMode="numeric"     
+                pattern="[0-9]*" 
+                onInput={(e) => {
+                    e.target.value = e.target.value.replace(/\D/g, ""); 
+                }}
+            />
+            <StyledAlertParagraph>Wie viele Punkte soll es geben, wenn der Spieler diese Aufgabe schon hatte <br></br> bedenke, <b>0 Punkte sind auch möglich</b>.</StyledAlertParagraph>
+            <StyledInput type="number" name="pointsAfterFinish" placeholder="Punkte nach Fertigstellung" min="0" max="10000" step="50" inputMode="numeric"     
+                pattern="[0-9]*" 
+                onInput={(e) => {
+                    e.target.value = e.target.value.replace(/\D/g, ""); 
+                }}
+            />
             <StyledTextButton type="submit" text={"Aufgabe erstellen"} />
           </StyledForm>
           <br />
@@ -108,6 +124,7 @@ export default function Managetasks() {
               <thead>
                 <tr>
                   <th>Aufgabe</th>
+                  <th>Punkte</th>
                   <th>Aktion</th>
                 </tr>
               </thead>
@@ -115,6 +132,7 @@ export default function Managetasks() {
                 {gameData.game.questions.map((question, index) => (
                   <tr key={index}>
                     <td>{question.task}</td>
+                    <td>{question.points}</td>
                     <td>
                       <StyledButton onClick={() => handleDelete(question._id)}>
                         Löschen
@@ -137,12 +155,23 @@ const StyledTextButton = styled(TextButton)`
     background-color: var(--brand-primary);
 `;
 
+const StyledInput = styled(CredentialInput)`
+  width: 70%;
+  margin-bottom: 0;
+`;
 
 const StyledIcon = styled(IoMdArrowRoundBack)`
   width: 2rem;
   height: 2rem;
   margin-left: 2rem;
   cursor: pointer;
+`;
+
+const StyledAlertParagraph = styled.p`
+  font-size: 0.8rem;
+  padding: 0;
+  margin: 0;
+  color:black;
 `;
 
 const Styledheadline = styled.h1`

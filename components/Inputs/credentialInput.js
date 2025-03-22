@@ -1,10 +1,10 @@
 import styled from "styled-components";
 
-export default function CredentialInput({type, placeholder, min, max, id, name, className, required, labeltext, onChange, maxLength, value, minLength}) {
+export default function CredentialInput({type, placeholder, min, max, id, name, className, required, labeltext, onChange, maxLength, value, minLength, step, onInput, pattern, inputMode}) {
     return (
         <InputContainer className={className}>
             <StyledLabel htmlFor={id} className={className}>{labeltext}</StyledLabel>
-            <StyledInput type={type} min={min} max={max} placeholder={placeholder} value={value} id={id} name={name} className={className} onChange={onChange} maxLength={maxLength} required={required} minLength={minLength}/>
+            <StyledInput type={type} min={min} max={max} placeholder={placeholder} value={value} id={id} name={name} className={className} onChange={onChange} maxLength={maxLength} required={required} minLength={minLength} step={step} onInput={onInput} pattern={pattern} inputMode={inputMode} />
         </InputContainer>
     );
 }
